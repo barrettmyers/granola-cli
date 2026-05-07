@@ -63,6 +63,10 @@ export interface DocumentList {
   document_ids?: string[];
 }
 
+export interface DocumentListsResponse {
+  lists: DocumentList[];
+}
+
 export interface WorkspaceEntry {
   workspace: {
     workspace_id: string;
@@ -129,7 +133,10 @@ export function createApiClient(httpClient: HttpClient): GranolaApi {
   }
 
   async function getDocumentLists(): Promise<DocumentList[]> {
-    return httpClient.post<DocumentList[]>('/v2/get-document-lists', {});
+    // /v2/get-document-lists wraps the array in { lists: [...] }; older
+    // callers expected a bare array, so unwrap here.
+    const response = await httpClient.post<DocumentListsResponse>('/v2/get-document-lists', {});
+    return response.lists;
   }
 
   async function getDocumentList(folderId: string): Promise<DocumentList | null> {
